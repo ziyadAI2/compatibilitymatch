@@ -43,6 +43,8 @@ See `docs/architecture.md` and `docs/diagrams.md`. For a dependency-light local 
 
 ### Technical diagrams
 
+![Integrated development and monitoring flow](docs/images/development_monitoring_flow.png)
+
 ![Development flow](docs/images/development_flow.png)
 
 ![Monitoring flow](docs/images/monitoring_flow.png)
@@ -50,4 +52,3 @@ See `docs/architecture.md` and `docs/diagrams.md`. For a dependency-light local 
 ### Limits
 
 No market-wide Tadawul coverage, real financial statements, private partnership synchronization, valuation/ownership records, authentication, CSV upload, token/cost telemetry, or production deployment. Relationship activation is represented by manually recorded status; the sample relationship is explicitly simulated. Chart.js is loaded from CDN. Financial ratios are not computed without source data.
-

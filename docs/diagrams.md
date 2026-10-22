@@ -1,5 +1,26 @@
 # Implemented technical diagrams
 
+## Integrated development and monitoring flow
+```mermaid
+flowchart TD
+ REQ[Requirements and data] --> CODE[Implement app and scoring]
+ CODE --> TEST[Unit tests and workflow review]
+ TEST --> GH[GitHub main]
+ GH --> RENDER[Render build and start]
+ RENDER --> APP[Running service on 0.0.0.0 and PORT]
+ APP --> ROUTES[Analysis, relationship, KPI, and diagnostic routes]
+ ROUTES --> EVENTS[(SQLite events)]
+ ROUTES --> KPI[(SQLite KPI rows)]
+ EVENTS --> METRICS[Counts, failures, mean latency]
+ KPI --> BUSINESS[KPI achievement and dashboard chart]
+ METRICS --> ADMIN[Admin user dashboard view]
+ BUSINESS --> ADMIN
+ ADMIN --> REVIEW[Review events, KPIs, and analysis]
+ REVIEW --> CODE
+```
+
+The admin user is shown as a dashboard viewer. The current application does not enforce login or admin-only permissions.
+
 ## Development flow
 ```mermaid
 flowchart LR
