@@ -206,7 +206,8 @@ class Handler(BaseHTTPRequestHandler):
     def log_message(self,*args): pass
 
 if __name__=='__main__':
-    init_db(); print('CompatibilityMatch running at http://127.0.0.1:8000'); ThreadingHTTPServer(('127.0.0.1',int(os.getenv('PORT','8000'))),Handler).serve_forever()
+    init_db(); print('CompatibilityMatch server started'); ThreadingHTTPServer(('0.0.0.0',int(os.getenv('PORT','8000'))),Handler).serve_forever()
+
 
 
 
