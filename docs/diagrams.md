@@ -19,12 +19,14 @@ flowchart LR
  C --> DB[(SQLite events table)]
  DB --> M[Dashboard calculations: totals, failures, mean latency]
  M --> UI[System Monitoring Dashboard]
+ UI --> ADM[Admin user reviews metrics and events]
  C --> A[Business target/actual validation]
  A --> K[(SQLite KPI actuals)]
  K --> V[Achievement and variance calculations]
  V --> AL[Attention status]
- AL --> S[Evidence-based AI summary on analysis; management review]
+ AL --> ADM
  K --> B[Partnership dashboard and actual-vs-target chart]
+ B --> ADM
 ```
 
-Business status flow begins from a relationship recorded as approved/signed by the user; the seeded sample is explicitly marked simulated. The current UI treats KPI updates as user-entered measurements and does not infer causes.
+Business status flow begins from a relationship recorded as approved/signed by the user; the seeded sample is explicitly marked simulated. The current UI treats KPI updates as user-entered measurements and does not infer causes. The admin user in this diagram is an operational viewer only: the app currently has no login, role checks, or admin-only authorization.
