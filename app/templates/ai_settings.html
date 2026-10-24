@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}إعدادات الذكاء الاصطناعي{% endblock %}
+{% block content %}
+<section class="page-intro">
+  <div><span class="eyebrow">إعدادات المدير</span><h2>مفتاح Gemini</h2><p>أضف مفتاح Gemini ليقيّم النموذج معايير المقارنة ويشرح الفرص والمخاطر.</p></div>
+</section>
+<section class="card" style="max-width:760px;margin:0 auto">
+  <h3>حالة الإعداد</h3>
+  {% if env_key %}
+  <div class="banner ok">يوجد مفتاح مضبوط في إعدادات بيئة الخادم، وهو المستخدم حالياً.</div>
+  {% elif saved_key %}
+  <div class="banner ok">يوجد مفتاح مشفّر محفوظ في قاعدة البيانات. لا تعرض الصفحة قيمته.</div>
+  {% else %}
+  <div class="banner err">لا يوجد مفتاح؛ يستخدم التطبيق حالياً الشرح التجريبي بالقواعد.</div>
+  {% endif %}
+  {% if not env_key %}
+  {% if not encryption_configured %}
+  <div class="notice-card"><span>!</span><div><b>يلزم إعداد التشفير قبل حفظ مفتاح Gemini</b><p>اضبط GEMINI_ENCRYPTION_KEY في إعدادات الخادم وثبّت cryptography. لتوليد مفتاح Fernet: <code>python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"</code></p></div></div>
+  {% endif %}
+  <form method="post" class="stack" autocomplete="off">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <label for="api_key">مفتاح Gemini API</label>
+    <input id="api_key" name="api_key" type="password" autocomplete="new-password" placeholder="ألصق المفتاح هنا" maxlength="2048" required>
+    <small class="muted">يُشفّر مفتاح Gemini قبل حفظه في جدول application_secrets. مفتاح التشفير يبقى في إعداد سري منفصل عن قاعدة البيانات.</small>
+    <button class="btn" type="submit" name="action" value="save" {% if not encryption_configured %}disabled{% endif %}>حفظ المفتاح المشفّر</button>
+  </form>
+  {% if saved_key %}
+  <form method="post" style="margin-top:12px" onsubmit="return confirm('هل تريد حذف مفتاح Gemini المحفوظ؟')">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <button class="btn secondary" type="submit" name="action" value="remove">حذف المفتاح المحلي</button>
+  </form>
+  {% endif %}
+  {% else %}
+  <p class="muted">تغيير مفتاح البيئة يتم من إعدادات تشغيل الخادم، وليس من هذه الصفحة.</p>
+  {% endif %}
+  <p class="muted" style="margin-top:18px">بعد الحفظ، نفّذ مقارنة لاختبار الاتصال. احتفظ بنسخة احتياطية من مفتاح التشفير منفصلة عن قاعدة البيانات؛ فقدانه يمنع فك تشفير المفتاح.</p>
+</section>
+{% endblock %}

@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block title %}مراقبة النظام{% endblock %}
+{% block content %}
+<section class="page-intro system-intro">
+  <div><span class="eyebrow">لوحة الإدارة · مؤشرات تقنية</span><h2>مراقبة النظام</h2><p>هنا تتابع استخدام التطبيق والأخطاء خلال آخر أسبوعين. وفي قسم Gemini تظهر الطلبات التي وصلت للخدمة فعلياً، منفصلة عن التجربة والمحاكاة.</p></div>
+</section>
+<svg class="icon-library" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  <symbol id="icon-events" viewBox="0 0 24 24"><path d="M7 3h8l4 4v14H7z"/><path d="M15 3v5h5M10 12h6M10 16h6"/></symbol>
+  <symbol id="icon-complete" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m8 12 2.5 2.5L16 9"/></symbol>
+  <symbol id="icon-failed" viewBox="0 0 24 24"><path d="M12 3 22 20H2L12 3Z"/><path d="M12 9v5M12 17h.01"/></symbol>
+  <symbol id="icon-errors" viewBox="0 0 24 24"><path d="M4 19V5M4 19h17"/><path d="m7 9 4 4 3-3 5 5M16 15h3v-3"/></symbol>
+  <symbol id="icon-latency" viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l3 2M9 2h6M12 5V3"/></symbol>
+  <symbol id="icon-ai" viewBox="0 0 24 24"><rect x="5" y="7" width="14" height="12" rx="3"/><path d="M12 3v4M9 12h.01M15 12h.01M9 16h6M2 11v4M22 11v4M8 21h8"/></symbol>
+  <symbol id="icon-validation" viewBox="0 0 24 24"><path d="M12 3 20 6v5c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6l8-3Z"/><path d="m8.5 12 2.2 2.2 4.8-4.8"/></symbol>
+  <symbol id="icon-freshness" viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 1.5M8 2h8M12 5V3"/></symbol>
+  <symbol id="icon-usage" viewBox="0 0 24 24"><path d="M7 7h13l-3-3M20 7l-3 3M17 17H4l3 3M4 17l3-3"/><path d="M10 9h4v6h-4z"/></symbol>
+  <symbol id="icon-cost" viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="14" rx="2"/><path d="M3 10h18M7 6V4h10v2M12 13v4M14 14.5c0-.8-.8-1.5-2-1.5s-2 .7-2 1.5.8 1.5 2 1.5 2 .7 2 1.5-.8 1.5-2 1.5-2-.7-2-1.5"/></symbol>
+</svg>
+<div class="grid grid-3">
+  <div class="metric"><div class="label metric-label"><span class="metric-icon"><svg aria-hidden="true"><use href="#icon-events"/></svg></span>إجمالي الأحداث</div><b>{{ metrics.total }}</b></div>
+  <div class="metric"><div class="label metric-label"><span class="metric-icon"><svg aria-hidden="true"><use href="#icon-complete"/></svg></span>عمليات ناجحة</div><b>{{ metrics.completed }}</b></div>
+  <div class="metric"><div class="label metric-label"><span class="metric-icon"><svg aria-hidden="true"><use href="#icon-failed"/></svg></span>عمليات فاشلة</div><b>{{ metrics.failed }}</b></div>
+  <div class="metric"><div class="label metric-label"><span class="metric-icon"><svg aria-hidden="true"><use href="#icon-errors"/></svg></span>نسبة الأخطاء</div><b>{{ metrics.error_rate }}٪</b></div>
+  <div class="metric"><div class="label metric-label"><span class="metric-icon"><svg aria-hidden="true"><use href="#icon-latency"/></svg></span>متوسط زمن المعالجة</div><b>{{ metrics.avg_latency_ms }} ملي ثانية</b></div>
+  <div class="metric"><div class="label metric-label"><span class="metric-icon"><svg aria-hidden="true"><use href="#icon-ai"/></svg></span>أخطاء الذكاء الاصطناعي</div><b>{{ metrics.ai_failures }}</b></div>
+  <div class="metric"><div class="label metric-label"><span class="metric-icon"><svg aria-hidden="true"><use href="#icon-validation"/></svg></span>أخطاء التحقق من البيانات</div><b>{{ metrics.validation_failures }}</b></div>
+  <div class="metric"><div class="label metric-label"><span class="metric-icon"><svg aria-hidden="true"><use href="#icon-freshness"/></svg></span>عمر أحدث بيانات (دقائق)</div><b>{{ metrics.freshness_minutes if metrics.freshness_minutes is not none else '—' }}</b></div>
+  <div class="metric"><div class="label metric-label"><span class="metric-icon"><svg aria-hidden="true"><use href="#icon-usage"/></svg></span>رموز Gemini المسجلة (إدخال/إخراج)</div><b>{{ metrics.tokens_in if metrics.tokens_in is not none else '—' }} / {{ metrics.tokens_out if metrics.tokens_out is not none else '—' }}</b></div>
+  <div class="metric"><div class="label metric-label"><span class="metric-icon"><svg aria-hidden="true"><use href="#icon-cost"/></svg></span>تكلفة Gemini التقديرية (USD)</div><b>{{ metrics.estimated_cost_usd if metrics.estimated_cost_usd is not none else '—' }}</b></div>
+</div>
+<section class="card" style="margin-top:16px">
+  <div class="section-title-row"><div><span class="eyebrow">مؤشرات المزود</span><h3>مراقبة Gemini API</h3></div><span class="form-step-badge">{{ gemini.model }}</span></div>
+  {% set gemini_status_ar = {'Not Configured':'غير مهيأ','Not Tested':'لم يُختبر بعد','Healthy':'يعمل جيداً','Degraded':'يحتاج إلى متابعة','Unavailable':'غير متاح'} %}
+  <p class="muted">الحالة: <strong>{{ gemini_status_ar.get(gemini.status, 'غير معروفة') }}</strong>. تعرض هذه المؤشرات الطلبات الحقيقية فقط؛ ولا تحتسب التجربة أو محاكاة الأعطال.</p>
+  <p class="muted">النموذج: {{ gemini.model }} · آخر طلب: {{ gemini.last_request_at or 'لم يُسجل طلب' }}{% if gemini.total and gemini.reason %} · {{ {'Healthy':'آخر الطلبات ناجحة','Degraded':'ظهرت أخطاء في بعض الطلبات الحديثة','Unavailable':'تعذر إكمال آخر طلب بسبب الاتصال أو الإعدادات','Not Tested':'لا توجد طلبات فعلية مسجلة','Not Configured':'لم تتم إضافة إعدادات Gemini'} .get(gemini.status, '') }}{% endif %}</p>
+  <div class="grid grid-3">
+    <div class="metric"><div class="label">إجمالي طلبات API الحقيقية</div><b>{{ gemini.total }}</b></div>
+    <div class="metric"><div class="label">طلبات ناجحة</div><b>{{ gemini.successful }}</b></div>
+    <div class="metric"><div class="label">طلبات فاشلة</div><b>{{ gemini.failed }}</b></div>
+    <div class="metric"><div class="label">رموز الإدخال المسجلة</div><b>{{ gemini.input_tokens if gemini.input_tokens is not none else '—' }}</b></div>
+    <div class="metric"><div class="label">رموز الإخراج المسجلة</div><b>{{ gemini.output_tokens if gemini.output_tokens is not none else '—' }}</b></div>
+    <div class="metric"><div class="label">متوسط زمن استجابة API</div><b>{{ gemini.average_latency_ms if gemini.average_latency_ms is not none else '—' }}{% if gemini.average_latency_ms is not none %} ملي ثانية{% endif %}</b></div>
+    <div class="metric"><div class="label">استخدام اليوم (UTC)</div><b>{{ gemini.daily.requests }} طلب · {{ gemini.daily.tokens_in if gemini.daily.tokens_in is not none else '—' }} / {{ gemini.daily.tokens_out if gemini.daily.tokens_out is not none else '—' }} رمز · {{ gemini.daily.cost_usd if gemini.daily.cost_usd is not none else '—' }} USD</b></div>
+    <div class="metric"><div class="label">استخدام هذا الشهر (UTC)</div><b>{{ gemini.monthly.requests }} طلب · {{ gemini.monthly.tokens_in if gemini.monthly.tokens_in is not none else '—' }} / {{ gemini.monthly.tokens_out if gemini.monthly.tokens_out is not none else '—' }} رمز · {{ gemini.monthly.cost_usd if gemini.monthly.cost_usd is not none else '—' }} USD</b></div>
+    <div class="metric"><div class="label">التكلفة التقديرية المسجلة (USD)</div><b>{{ gemini.estimated_cost_usd if gemini.estimated_cost_usd is not none else '—' }}</b></div>
+  </div>
+  <p class="muted" style="margin-top:12px">التكلفة تقديرية حسب أسعار الوحدة المضبوطة في إعدادات التطبيق، وليست فاتورة Google. لا تظهر أرقام الرموز أو التكلفة إن لم يرسلها مزود الخدمة.</p>
+  <h4>أخطاء Gemini المسجلة ورموز HTTP</h4>
+  {% if gemini.errors %}<ul>{% for code, count in gemini.errors %}<li><code>{{ code }}</code>: {{ count }}</li>{% endfor %}</ul>{% else %}<p class="muted">لا توجد أخطاء API مسجلة.</p>{% endif %}
+</section>
+<div class="grid grid-2" style="margin-top:16px">
+  <div class="card">
+    <h3>محاكاة أعطال للعرض</h3>
+    <form method="post" action="{{ url_for('main.simulate') }}" class="stack">
+      <button class="btn" name="kind" value="ai_timeout">انتهاء مهلة الذكاء الاصطناعي</button>
+      <button class="btn secondary" name="kind" value="missing_company">شركة ناقصة</button>
+      <button class="btn gold" name="kind" value="delayed_analysis">تحليل متأخر</button>
+    </form>
+  </div>
+  <div class="card">
+    <h3>توزيع الأنواع</h3>
+    <p class="muted chart-caption">عدد الأحداث المسجلة خلال آخر 14 يوماً. استُبعدت طلبات Gemini الحقيقية والأنواع غير المصنفة من هذا المخطط.</p>
+    {% set event_labels = {'analysis':'تحليل الشركات','ai_analysis':'الشرح والتحليل','ai_demo':'شرح تجريبي','fault_simulation':'محاكاة عطل','discovery':'اكتشاف المرشحين','validation_failure':'تعذّر التحقق من البيانات'} %}
+    {% set chart_max = namespace(value=1) %}
+    {% for item in metrics.by_type if item.type in event_labels %}{% set chart_max.value = [chart_max.value, item.count]|max %}{% endfor %}
+    <div class="event-bars" role="list">
+      {% for item in metrics.by_type if item.type in event_labels %}
+      <div class="event-bar-row" role="listitem"><div class="event-bar-label"><span>{{ event_labels[item.type] }}</span><b>{{ item.count }}</b></div><div class="event-bar-track" role="meter" aria-label="{{ event_labels[item.type] }}" aria-valuemin="0" aria-valuemax="{{ chart_max.value }}" aria-valuenow="{{ item.count }}"><span style="width:{{ ((item.count / chart_max.value) * 100)|round|int }}%"></span></div></div>
+      {% else %}<div class="empty-state"><span class="empty-icon">▤</span><b>لا توجد أحداث لعرضها في هذه الفترة</b><p>ستظهر الأنواع بعد استخدام المقارنة أو الاكتشاف.</p></div>{% endfor %}
+    </div>
+  </div>
+</div>
+<div class="card" style="margin-top:16px">
+  <h3>آخر الأحداث</h3>
+  <table>
+    <thead><tr><th>الوقت</th><th>نوع الحدث</th><th>النتيجة</th><th>زمن المعالجة (ملي ثانية)</th><th>سبب التعثر</th><th>التفاصيل</th></tr></thead>
+    <tbody>
+    {% for e in metrics.recent %}
+      <tr>
+        <td>{{ e.created_at }}</td>
+        <td>{{ {'analysis':'تحليل شركات','ai_analysis':'تحليل الشركات','ai_demo':'شرح تجريبي بلا Gemini','gemini_api_request':'طلب Gemini حقيقي','fault_simulation':'محاكاة عطل','discovery':'اكتشاف مرشحين','analysis_failed':'تعذّر التحليل','ai_timeout':'انتهاء مهلة الذكاء الاصطناعي','missing_company':'بيانات شركة ناقصة','delayed_analysis':'تحليل استغرق وقتاً أطول من المعتاد','validation_failure':'تعذّر التحقق من البيانات'}.get(e.event_type, 'حدث مسجل') }}</td>
+        <td>{{ 'نعم' if e.success else 'لا' }}</td>
+        <td>{{ e.latency_ms }}</td>
+        <td>{{ {'AI_TIMEOUT':'انتهاء مهلة خدمة الذكاء الاصطناعي','MISSING_COMPANY':'بيانات الشركة غير موجودة','DELAYED_ANALYSIS':'تأخر إكمال التحليل','timeout':'انتهاء مهلة الاتصال بخدمة الذكاء الاصطناعي','connection_error':'تعذر الاتصال بخدمة Gemini','invalid_response_http_200':'رد Gemini لا يطابق البنية المطلوبة','ai_error':'مشكلة في خدمة الذكاء الاصطناعي','authentication_http_401':'رفض المصادقة (HTTP 401)','authentication_http_403':'صلاحية مرفوضة (HTTP 403)','rate_limit_http_429':'تجاوز حد الطلبات (HTTP 429)','provider_http_503':'خدمة Gemini غير متاحة (HTTP 503)','missing_company':'بيانات الشركة غير موجودة','invalid_pair':'يجب اختيار شركتين مختلفتين','simulated_timeout':'محاكاة مهلة؛ لم يُرسل طلب إلى Gemini','simulated_delay':'محاكاة تأخير؛ لم يُرسل طلب إلى Gemini'}.get(e.error_code, e.error_code or '—') }}</td>
+        <td>{{ 'تم تسجيل الحدث لمتابعة أداء النظام.' if e.details else '—' }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

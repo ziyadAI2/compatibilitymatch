@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}نتائج الاكتشاف — مِشراك{% endblock %}
+{% block content %}
+<section class="results-hero">
+  <div><span class="eyebrow">نتيجة الاكتشاف · {{ analysis_labels.get(analysis_type) }}</span><h2>مرشحون محتملون لـ<br><span>{{ company_a.official_name }}</span></h2>
+    {% if analysis.mode == 'llm_discovery' %}<p>رشّح المحرك المحلي {{ discovery_report.count_screened }} مرشحين من السجل، ثم قيّمهم Mishrak AI وأعاد ترتيبهم استناداً إلى الأدلة المتاحة. لا يمثل ذلك اتفاقاً مؤكداً.</p>
+    {% else %}<p>هذا ترتيب محلي تجريبي بالقواعد اعتماداً على بيانات السجل، ولم يُقيّم بواسطة Mishrak AI.</p>{% endif %}
+  </div>
+  <div class="results-count"><b>{{ ranked|length }}</b><span>مرشحين للعرض</span><small>من {{ analysis.company_a.official_name }}</small>{% if analysis.mode == 'llm_discovery' %}<small>قيّمهم Mishrak AI</small>{% endif %}</div>
+</section>
+{% if discovery_report.summary %}<div class="results-disclaimer"><span>ⓘ</span><p><b>{% if analysis.mode == 'llm_discovery' %}ملخص Mishrak AI:{% else %}ملخص الترتيب المحلي:{% endif %}</b> {{ discovery_report.summary }}{% if discovery_report.limitations %}<br><b>القيود:</b> {{ discovery_report.limitations|join('؛ ') }}{% endif %}</p></div>{% endif %}
+<div class="results-toolbar"><div><b>{% if analysis.mode == 'llm_discovery' %}أفضل النتائج حسب تقييم Mishrak AI{% else %}أفضل النتائج المحلية الأولية{% endif %}</b><span> الدرجة لا تثبت وجود اتفاق أو فرصة تجارية مؤكدة.</span></div><a class="btn secondary" href="{{ url_for('main.discover') }}">بحث جديد</a></div>
+<div class="candidate-list">
+{% for rec, cand, payload in ranked %}
+  <article class="candidate-card {{ 'candidate-top' if loop.first else '' }}">
+    <div class="candidate-rank"><span>{{ '%02d'|format(rec.rank) }}</span><small>{% if loop.first %}الأعلى ترتيباً{% else %}ترتيب مبدئي{% endif %}</small></div>
+    <div class="candidate-main">
+      <div class="candidate-title"><div><span class="company-symbol">{{ cand.symbol }}</span><span class="sector-pill">{{ cand.sector }}</span><h3>{{ cand.official_name }}</h3><small>{{ cand.subsector }}</small></div>
+        <div class="candidate-score"><small>{% if analysis.mode == 'llm_discovery' %}درجة Mishrak AI{% else %}درجة محلية{% endif %}</small><b class="score-badge {{ score_class(rec.overall_score) }}">{{ rec.overall_score }}</b><span>من 100</span></div>
+      </div>
+      <div class="score-track {{ score_class(rec.overall_score) }}"><span style="width:{{ rec.overall_score }}%"></span></div>
+      <div class="candidate-facts">
+        {% if analysis.mode == 'llm_discovery' %}
+        <div><span class="fact-label">فرصة التعاون المحتملة</span><p>{{ payload.opportunity }}</p></div>
+        <div><span class="fact-label">الأدلة التي استند إليها التقييم</span><p>{{ payload.evidence_summary }}</p></div>
+        <div><span class="fact-label">مخاطر تحتاج مراجعة</span><p>{{ rec.risks or 'لم يحدد النموذج مخاطر واضحة؛ يلزم التحقق من المصادر.' }}</p></div>
+        <div><span class="fact-label">خطوة تحقق مقترحة</span><p>{{ payload.next_step }}</p></div>
+        {% else %}
+        <div><span class="fact-label">سبب الترشيح المحلي</span><p>{{ payload.opportunity if payload.opportunity is defined else rec.why }}</p></div>
+        <div><span class="fact-label">ما يحتاج تحققاً</span><p>{{ rec.risks or 'لا توجد مخاطر محددة من البيانات الحالية؛ يلزم تحقق إضافي.' }}</p></div>
+        {% endif %}
+      </div>
+      {% if analysis.mode == 'llm_discovery' and payload.criteria %}
+      <details class="candidate-criteria">
+        <summary>تفصيل معايير تقييم Mishrak AI</summary>
+        <table><thead><tr><th>المعيار</th><th>الوزن</th><th>الدرجة</th><th>التفسير والدليل</th></tr></thead><tbody>
+          {% for item in payload.criteria %}<tr><td>{{ discovery_criterion_labels.get(item.key, item.key) }}</td><td>{{ (item.weight * 100)|round|int }}٪</td><td>{{ item.score if item.score is not none else 'غير كافية الأدلة' }}</td><td>{{ item.explanation }}{% if item.evidence %}<br><small>الدليل: {{ item.evidence }}</small>{% endif %}</td></tr>{% endfor %}
+        </tbody></table>
+      </details>
+      {% endif %}
+      <div class="candidate-foot"><span>تغطية الأدلة <b>{% if payload.evidence_coverage is not none %}{{ (payload.evidence_coverage * 100)|round|int }}٪{% else %}غير مسجلة{% endif %}</b></span>{% if analysis.mode == 'llm_discovery' %}<span>ثقة النموذج <b>{{ (payload.confidence * 100)|round|int }}٪</b></span><span>إعادة ترتيب بواسطة Mishrak AI</span>{% else %}<span>ترشيح أولي من الملف التعريفي والسجل المحلي</span>{% endif %}
+        <form method="post" action="{{ url_for('main.compare') }}"><input type="hidden" name="company_a" value="{{ company_a.id }}"><input type="hidden" name="company_b" value="{{ cand.id }}"><input type="hidden" name="analysis_type" value="{{ analysis_type }}"><button class="btn secondary" type="submit">قارن بالتفصيل <span aria-hidden="true">←</span></button></form>
+      </div>
+    </div>
+  </article>
+{% endfor %}
+</div>
+{% endblock %}

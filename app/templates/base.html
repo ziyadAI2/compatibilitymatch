@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}مِشراك{% endblock %}</title>
+  <meta name="theme-color" content="#102b43">
+  <meta name="color-scheme" content="light">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=20261024-ui5">
+</head>
+<body>
+  <a class="skip-link" href="#main-content">تجاوز إلى المحتوى</a>
+  <svg class="icon-library" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <symbol id="nav-home" viewBox="0 0 24 24"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/></symbol>
+    <symbol id="nav-compare" viewBox="0 0 24 24"><path d="M4 7h14m0 0-3-3m3 3-3 3M20 17H6m0 0 3-3m-3 3 3 3"/></symbol>
+    <symbol id="nav-search" viewBox="0 0 24 24"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 4.5 4.5"/></symbol>
+    <symbol id="nav-data" viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/></symbol>
+    <symbol id="nav-chart" viewBox="0 0 24 24"><path d="M4 20V5M4 20h17"/><path d="m7 15 4-4 3 2 5-7"/></symbol>
+    <symbol id="nav-settings" viewBox="0 0 24 24"><path d="M4 7h10m4 0h2M4 17h2m4 0h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></symbol>
+    <symbol id="nav-report" viewBox="0 0 24 24"><path d="M6 3h8l5 5v13H6z"/><path d="M14 3v5h5M9 13h7M9 17h7"/></symbol>
+    <symbol id="nav-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c.8-4 3.5-6 8-6s7.2 2 8 6"/></symbol>
+    <symbol id="nav-arrow" viewBox="0 0 24 24"><path d="M19 12H5m0 0 6-6m-6 6 6 6"/></symbol>
+  </svg>
+  <header class="app-header">
+    <div class="brand">
+      <div class="logo-mark" aria-hidden="true">
+        <svg viewBox="0 0 48 48" focusable="false" aria-label="ترابط الشركات"><path d="M7 15h12v24H7zM29 9h12v30H29z"/><path d="M19 25h10M19 25l-4-4M19 25l-4 4M29 25l4-4M29 25l4 4"/><path d="M11 20h4M11 26h4M33 16h4M33 22h4M33 28h4"/></svg>
+      </div>
+      <div>
+        <h1>مِشراك | ذكاء الشراكات</h1>
+        <p>ترابط الشركات السعودية وتحليل فرص الشراكة</p>
+      </div>
+    </div>
+    <nav class="nav" aria-label="التنقل الرئيسي">
+      {% if logged_in_user %}
+      <a href="{{ url_for('main.home') }}" class="{{ 'active' if request.endpoint == 'main.home' else '' }}" {% if request.endpoint == 'main.home' %}aria-current="page"{% endif %}><svg aria-hidden="true"><use href="#nav-home"/></svg>الرئيسية</a>
+      <a href="{{ url_for('main.compare') }}" class="{{ 'active' if request.endpoint == 'main.compare' else '' }}" {% if request.endpoint == 'main.compare' %}aria-current="page"{% endif %}><svg aria-hidden="true"><use href="#nav-compare"/></svg>مقارنة الشركات</a>
+      <a href="{{ url_for('main.discover') }}" class="{{ 'active' if request.endpoint in ('main.discover', 'main._run_discovery') else '' }}" {% if request.endpoint == 'main.discover' %}aria-current="page"{% endif %}><svg aria-hidden="true"><use href="#nav-search"/></svg>الاكتشاف الذكي</a>
+      <a href="{{ url_for('main.market_data') }}" class="{{ 'active' if request.endpoint == 'main.market_data' else '' }}" {% if request.endpoint == 'main.market_data' %}aria-current="page"{% endif %}><svg aria-hidden="true"><use href="#nav-data"/></svg>بيانات السوق</a>
+      {% if logged_in_user.role == 'admin' %}
+      <a href="{{ url_for('main.system_monitor') }}" class="{{ 'active' if request.endpoint == 'main.system_monitor' else '' }}" {% if request.endpoint == 'main.system_monitor' %}aria-current="page"{% endif %}><svg aria-hidden="true"><use href="#nav-chart"/></svg>مراقبة النظام</a>
+      <a href="{{ url_for('main.ai_settings') }}" class="{{ 'active' if request.endpoint == 'main.ai_settings' else '' }}" {% if request.endpoint == 'main.ai_settings' %}aria-current="page"{% endif %}><svg aria-hidden="true"><use href="#nav-settings"/></svg>إعدادات الذكاء الاصطناعي</a>
+      {% endif %}
+      <a href="{{ url_for('main.reports') }}" class="{{ 'active' if request.endpoint in ('main.reports', 'main.analysis_detail', 'main.analysis_json', 'main.discovery_detail') else '' }}" {% if request.endpoint in ('main.reports', 'main.analysis_detail', 'main.analysis_json', 'main.discovery_detail') %}aria-current="page"{% endif %}><svg aria-hidden="true"><use href="#nav-report"/></svg>التقارير</a>
+      {% endif %}
+    </nav>
+    {% if logged_in_user %}<div class="account-area"><span class="account-name">{{ logged_in_user.username }} · {{ 'مدير' if logged_in_user.role == 'admin' else 'مستخدم' }}</span><form method="post" action="{{ url_for('auth.logout') }}"><button class="logout-btn" type="submit">خروج</button></form></div>{% else %}<a class="login-link" href="{{ url_for('auth.login') }}">تسجيل الدخول</a>{% endif %}
+  </header>
+  <main class="container" id="main-content">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for cat, msg in messages %}
+        <div class="banner {{ cat }}">{{ msg }}</div>
+      {% endfor %}
+    {% endwith %}
+    {% block content %}{% endblock %}
+  </main>
+  <div class="footer">مِشراك — أداة مساندة لتحليل فرص التعاون بين الشركات، ولا تُعدّ توصية استثمارية.</div>
+  <script>
+    document.querySelectorAll('form.stack').forEach((form) => {
+      form.addEventListener('submit', () => {
+        const button = form.querySelector('button[type="submit"]');
+        if (!button || button.disabled) return;
+        button.disabled = true;
+        button.setAttribute('aria-busy', 'true');
+        button.dataset.originalText = button.textContent.trim();
+        button.textContent = 'جارٍ تنفيذ الطلب…';
+      });
+    });
+  </script>
+</body>
+</html>

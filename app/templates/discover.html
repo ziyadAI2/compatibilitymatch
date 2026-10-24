@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}الاكتشاف الذكي — مِشراك{% endblock %}
+{% block content %}
+<section class="page-intro discover-intro">
+  <div><span class="eyebrow">اكتشاف من قاعدة الشركات</span><h2>من شركتك إلى مرشحين محتملين</h2><p>نرشّح قائمة قصيرة محلياً، ثم يقيّم Mishrak AI فرص التعاون والأدلة والمخاطر ويعيد ترتيبها عند تهيئة المفتاح. تُرسل ملفات الشركات المختارة للتحليل إلى خدمة الذكاء الاصطناعي.</p></div>
+  <div class="discovery-orbit" aria-hidden="true"><span>بحث</span><i>⌕</i><b>{{ companies|length }}</b></div>
+</section>
+<div class="discover-layout">
+  <section class="card discover-form-card">
+    <div class="section-title-row"><div><span class="eyebrow">إعداد البحث</span><h3>ما الفرصة التي تبحث عنها؟</h3></div><span class="form-step-badge">{{ companies|length }} شركة</span></div>
+    <form class="stack" method="post" id="discoverForm">
+      <label><span>الشركة التي تنطلق منها</span>
+        <select name="company_a" id="discoverCompany" required>
+          {% for c in companies %}<option value="{{ c.id }}" data-sector="{{ c.sector }}" data-symbol="{{ c.symbol }}" {% if c.symbol == '7010' %}selected{% endif %}>{{ c.official_name }} — {{ c.symbol }} · {{ c.sector }}</option>{% endfor %}
+        </select>
+        <small class="field-hint">اختر الشركة التي تريد البحث عن شركاء محتملين لها.</small>
+      </label>
+      <label><span>نوع العلاقة المراد استكشافها</span>
+        <select name="analysis_type" id="discoverType">
+          <option value="partnership">شراكة استراتيجية</option>
+          <option value="joint_venture">مشروع مشترك</option>
+        </select>
+      </label>
+      <div class="selected-company-card"><span class="preview-symbol" id="discoverSymbol">7010</span><div><small>الشركة المختارة · <span id="discoverSector">قطاع</span></small><b id="discoverName">شركة الاتصالات السعودية</b></div></div>
+      <div class="relationship-hint"><span class="hint-icon">⌕</span><p id="discoverTypeHint">يفرز النظام أول 10 مرشحين محلياً، ثم يقيّمهم Mishrak AI على دفعات صغيرة وفق تكامل الأنشطة وفرص التعاون والأدلة والمخاطر.</p></div>
+      <button class="btn compare-submit" id="discoverSubmit" type="submit">{% if ai_enabled %}حلّل المرشحين بـMishrak AI{% else %}ابدأ ترتيب المرشحين{% endif %} <span aria-hidden="true">←</span></button>
+    </form>
+  </section>
+  <aside class="discover-side">
+    <section class="card discovery-guide">
+      <span class="eyebrow">كيف يعمل الاكتشاف؟</span><h3>قائمة أولية، لا قرار آلي</h3>
+      <div class="guide-item"><span>١</span><p><b>ترشيح أولي محلي</b><small>تُستبعد الشركة المختارة ويُختار أفضل 10 مرشحين مبدئياً.</small></p></div>
+      <div class="guide-item"><span>٢</span><p><b>تقييم Mishrak AI</b><small>يقيس التكامل والفرصة والملاءمة والأدلة وإمكانية إدارة المخاطر من الملفات المتاحة.</small></p></div>
+      <div class="guide-item"><span>٣</span><p><b>عرض أفضل خمسة</b><small>تُحسب الدرجة الموزونة داخل التطبيق، وتظهر الأدلة والثقة والقيود وخطوة التحقق.</small></p></div>
+    </section>
+  </aside>
+</div>
+<section class="discover-benefits">
+  <div><span class="benefit-icon">⌗</span><b>مقاييس مختلفة للعلاقة</b><small>معايير الشراكة تختلف عن المشروع المشترك.</small></div>
+  <div><span class="benefit-icon">◉</span><b>ترتيب قابل للتفسير</b><small>تقييم Mishrak AI مدعوم بالأدلة والثقة والقيود.</small></div>
+  <div><span class="benefit-icon">⇄</span><b>انتقال مباشر للمقارنة</b><small>افتح المرشح لتحليل الزوج بالتفصيل.</small></div>
+</section>
+<script>
+const discoverCompany = document.getElementById('discoverCompany');
+const updateDiscoverCompany = () => {
+  const option = discoverCompany.selectedOptions[0];
+  document.getElementById('discoverName').textContent = option.textContent.split(' — ')[0];
+  document.getElementById('discoverSymbol').textContent = option.dataset.symbol;
+  document.getElementById('discoverSector').textContent = option.dataset.sector;
+};
+discoverCompany.addEventListener('change', updateDiscoverCompany); updateDiscoverCompany();
+document.getElementById('discoverForm').addEventListener('submit', () => {
+  const button = document.getElementById('discoverSubmit');
+  button.disabled = true;
+  button.textContent = {{ '"جارٍ تحليل المرشحين بواسطة Mishrak AI…"' if ai_enabled else '"جارٍ ترتيب المرشحين…"' }};
+});
+document.getElementById('discoverType').addEventListener('change', event => {
+  document.getElementById('discoverTypeHint').textContent = event.target.value === 'joint_venture'
+    ? 'يفرز النظام أول 10 مرشحين محلياً، ثم يقيّمهم Mishrak AI على دفعات لمشروع مشترك وفق تكامل الموارد والجدوى ومخاطر التنفيذ.'
+    : 'يفرز النظام أول 10 مرشحين محلياً، ثم يقيّمهم Mishrak AI على دفعات للشراكة وفق تكامل الأنشطة وفرص التعاون والأدلة والمخاطر.';
+});
+</script>
+{% endblock %}

@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}بيانات السوق | مِشراك{% endblock %}
+{% block content %}
+<section class="section-heading">
+  <div><p class="eyebrow">سياق اقتصادي موثق</p><h2>بيانات السوق والقطاعات</h2>
+  <p>مؤشرات كلية للقطاعات السعودية، مستقلة عن الأرقام المالية الخاصة بكل شركة.</p></div>
+</section>
+<div class="banner ok">المصدر: الهيئة العامة للإحصاء، إحصاءات الأعمال الهيكلية 2024. القيم نسب/إجماليات قطاعية وليست بيانات شركة بعينها. الأرقام المنشورة في المصدر مقربة.</div>
+{% if indicators %}
+<div class="catalog-table-wrap"><table class="catalog-table">
+  <thead><tr><th>المؤشر</th><th>النشاط الاقتصادي</th><th>السنة</th><th>القيمة</th><th>الوحدة</th><th>المصدر</th></tr></thead>
+  <tbody>{% for item in indicators %}<tr>
+    <td>{{ item.metric_name }}</td><td>{{ item.sector }}</td><td>{{ item.period_year }}</td>
+    <td>{{ "{:,.1f}".format(item.value) }}</td><td>{{ item.unit }}</td>
+    <td><a href="{{ item.source_url }}" target="_blank" rel="noopener noreferrer">{{ item.source_title }}</a></td>
+  </tr>{% endfor %}</tbody>
+</table></div>
+{% else %}<div class="empty-state">لم تُستورد مؤشرات السوق بعد.</div>{% endif %}
+{% endblock %}
